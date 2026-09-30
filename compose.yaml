@@ -1,0 +1,71 @@
+name: lablens
+services:
+  database:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lablens
+      POSTGRES_DB: lablens
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run python3 scripts/configure.py first}
+    volumes:
+      - lablens-postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lablens -d lablens"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["alembic", "upgrade", "head"]
+    environment: &api-environment
+      LABLENS_DATABASE_URL: postgresql+psycopg://lablens:${POSTGRES_PASSWORD}@database:5432/lablens
+      LABLENS_GATEWAY_SECRET: ${LABLENS_GATEWAY_SECRET:?Run python3 scripts/configure.py first}
+      LABLENS_ENVIRONMENT: ${LABLENS_ENVIRONMENT:-development}
+      LABLENS_AI_API_KEY: ${LABLENS_AI_API_KEY:-}
+      LABLENS_AI_MODEL: ${LABLENS_AI_MODEL:-}
+    depends_on:
+      database:
+        condition: service_healthy
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment: *api-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      LABLENS_API_URL: http://api:8000
+      LABLENS_GATEWAY_SECRET: ${LABLENS_GATEWAY_SECRET}
+      LABLENS_PUBLIC_ORIGIN: ${LABLENS_PUBLIC_ORIGIN:-http://localhost:3000}
+      LABLENS_ENVIRONMENT: ${LABLENS_ENVIRONMENT:-development}
+    depends_on:
+      api:
+        condition: service_healthy
+  maintenance:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["python", "scripts/maintenance_loop.py"]
+    restart: unless-stopped
+    environment: *api-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  lablens-postgres:

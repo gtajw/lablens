@@ -1,0 +1,85 @@
+{
+  "checksum": "5f0f6b7e0f39a08f45a00c477b23536201af96e2d9768a9fbb67b1bc6d544b9c",
+  "rules": {
+    "INPUT.DATASET_INVARIANT_BROKEN": [
+      "error",
+      true,
+      "The saved dataset failed its integrity check. Import a fresh copy."
+    ],
+    "UNIT.OFFSET_TRANSFORM_UNSAFE": [
+      "error",
+      true,
+      "Use Kelvin for absolute temperature, or a delta unit for a temperature difference, before this operation."
+    ],
+    "TRANSFORM.DOMAIN_INVALID": [
+      "error",
+      true,
+      "The transform is undefined for one or more rows. Correct the data or choose another transform."
+    ],
+    "TRANSFORM.RESULT_NONFINITE": [
+      "error",
+      true,
+      "This transform exceeds the supported numerical range. Rescale the experiment or choose another transform."
+    ],
+    "MODEL.INSUFFICIENT_POINTS": [
+      "error",
+      true,
+      "Add more measurements: the fit needs at least one residual degree of freedom."
+    ],
+    "MODEL.INSUFFICIENT_DISTINCT_X": [
+      "error",
+      true,
+      "The model needs more distinct transformed x values to identify its coefficients."
+    ],
+    "MODEL.BASIS_NONFINITE": [
+      "error",
+      true,
+      "A polynomial term exceeds double-precision range. Choose a lower-degree model or a different transform."
+    ],
+    "MODEL.DESIGN_MATRIX_RANK_DEFICIENT": [
+      "error",
+      true,
+      "The measured x values cannot independently identify all model coefficients."
+    ],
+    "MODEL.CONDITION_NUMBER_EXTREME": [
+      "error",
+      true,
+      "The fit is too sensitive to small changes to report reliable coefficients. Collect more widely spaced measurements."
+    ],
+    "MODEL.CONDITION_NUMBER_HIGH": [
+      "warning",
+      false,
+      "Small changes in the data may cause large changes in these coefficients."
+    ],
+    "MODEL.RESULT_UNREPRESENTABLE": [
+      "error",
+      true,
+      "A result falls outside reliable double-precision range. Change the scale of the experiment."
+    ],
+    "MODEL.FIXED_ZERO_ASSUMPTION": [
+      "warning",
+      false,
+      "A zero intercept is an assumption you chose. Explain why zero transformed x should imply zero y in this experiment."
+    ],
+    "MODEL.SHIFT_WITH_FIXED_ZERO": [
+      "warning",
+      false,
+      "Shifting the origin changes where the model is forced through zero. Check this against the physical setup."
+    ],
+    "UNIT.COEFFICIENT_DIMENSION_MISMATCH": [
+      "error",
+      false,
+      "The claimed coefficient unit has different dimensions from the fitted coefficient. Divide the y unit by the unit of its x term."
+    ],
+    "METRIC.R_SQUARED_UNDEFINED": [
+      "info",
+      false,
+      "R\u00b2 is undefined because all y values are identical. The coefficients and residuals remain available."
+    ],
+    "INTERPRETATION.FIT_NOT_PHYSICAL_PROOF": [
+      "info",
+      false,
+      "A close fit does not establish a physical law. Check your model assumptions, measurement procedure, and residual pattern."
+    ]
+  }
+}

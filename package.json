@@ -1,0 +1,29 @@
+{
+  "name": "lablens",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/web",
+    "build": "npm run build -w apps/web",
+    "start": "npm run start -w apps/web",
+    "typecheck": "npm run typecheck -w apps/web",
+    "test:e2e": "playwright test",
+    "db:local": "node scripts/local-postgres.mjs",
+    "contract": "openapi-typescript docs/openapi.json -o apps/web/lib/generated-api.ts"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-socket": "0.2.11",
+    "@playwright/test": "1.63.0",
+    "@sparticuz/chromium": "153.0.0",
+    "openapi-typescript": "7.13.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

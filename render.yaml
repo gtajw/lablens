@@ -1,0 +1,73 @@
+# Review resource pricing and credits before creating this Blueprint.
+# Enter the SAME random 64-character gateway secret for web and API when prompted.
+services:
+  - type: pserv
+    name: lablens-api
+    runtime: docker
+    plan: 1c-2g
+    region: ohio
+    dockerfilePath: apps/api/Dockerfile
+    dockerContext: .
+    preDeployCommand: alembic upgrade head
+    envVars:
+      - key: LABLENS_ENVIRONMENT
+        value: production
+      - key: LABLENS_GATEWAY_SECRET
+        sync: false
+      - key: LABLENS_DATABASE_URL
+        fromDatabase:
+          name: lablens-postgres
+          property: connectionString
+      - key: PORT
+        value: '8000'
+  - type: web
+    name: lablens-web
+    runtime: docker
+    plan: 0.5c-512mb
+    region: ohio
+    dockerfilePath: apps/web/Dockerfile
+    dockerContext: .
+    healthCheckPath: /about
+    envVars:
+      - key: LABLENS_ENVIRONMENT
+        value: production
+      - key: LABLENS_GATEWAY_SECRET
+        sync: false
+      - key: LABLENS_PUBLIC_ORIGIN
+        sync: false
+      - key: LABLENS_API_HOSTPORT
+        fromService:
+          type: pserv
+          name: lablens-api
+          property: hostport
+      - key: PORT
+        value: '3000'
+  - type: cron
+    name: lablens-retention
+    runtime: docker
+    region: ohio
+    schedule: '17 * * * *'
+    dockerfilePath: apps/api/Dockerfile
+    dockerContext: .
+    dockerCommand: python scripts/cleanup.py
+    envVars:
+      - key: LABLENS_ENVIRONMENT
+        value: production
+      - key: LABLENS_GATEWAY_SECRET
+        fromService:
+          type: pserv
+          name: lablens-api
+          envVarKey: LABLENS_GATEWAY_SECRET
+      - key: LABLENS_DATABASE_URL
+        fromDatabase:
+          name: lablens-postgres
+          property: connectionString
+databases:
+  - name: lablens-postgres
+    region: ohio
+    plan: 0.5c-1g
+    postgresMajorVersion: '18'
+    databaseName: lablens
+    user: lablens
+    diskSizeGB: 5
+    ipAllowList: []
